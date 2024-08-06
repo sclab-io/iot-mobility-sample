@@ -90,7 +90,7 @@ class MobilityManager {
     for (let i = 0; i < this.totalCount; i++) {
       const mobility = new Mobility(
         {
-          id: `${i}`,
+          id: `id${i}`,
           name: `Mobility ${i}`,
           gps: this.getRandomLocation(),
           createdAt: new Date(),
@@ -112,14 +112,12 @@ class MobilityManager {
     this.mobilities.forEach((mobility) => {
       mobility.updatePosition();
       const data = JSON.stringify(mobility.info);
-      client.publish(TOPIC_PREFIX + "/" + mobility.info.id, data, (err) => {
+      const topic = TOPIC_PREFIX + "/" + mobility.info.id;
+      client.publish(topic, data, (err) => {
         if (err) {
-          console.error(
-            `Failed to publish message for ${mobility.info.id}`,
-            err
-          );
+          console.error(`Failed to publish message for ${topic}`, err);
         } else {
-          console.log(`Message published for ${mobility.info.id} : ${data}`);
+          console.log(`Message published for ${topic} : ${data}`);
         }
       });
     });
