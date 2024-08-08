@@ -7,10 +7,13 @@ const SEOUL_LNG_MIN = 126.8;
 const SEOUL_LNG_MAX = 127.1;
 const MOVE_DISTANCE_MIN = 0.0001;
 const MOVE_DISTANCE_MAX = 0.001;
-const TOPIC_PREFIX = process.env.TOPIC;
-const INTERVAL_MS = process.env.INTERVAL
-  ? parseInt(process.env.INTERVAL, 10)
+const TOPIC = process.env.TOPIC || "";
+const INTERVAL_MAX_MS = process.env.INTERVAL_MAX_MS
+  ? parseInt(process.env.INTERVAL_MAX_MS, 10)
   : 3000;
+const INTERVAL_MIN_MS = process.env.INTERVAL_MIN_MS
+  ? parseInt(process.env.INTERVAL_MIN_MS, 10)
+  : 1000;
 const OPTIONS: IClientOptions = {
   protocolVersion: 3,
   host: process.env.HOST || "localhost",
@@ -31,10 +34,8 @@ const client = mqtt.connect(OPTIONS);
 interface MobilityInfo {
   id: string;
   name: string;
-  gps: {
-    lat: number;
-    lng: number;
-  };
+  lat: number;
+  lng: number;
   createdAt: Date;
 }
 
@@ -45,6 +46,31 @@ class Mobility {
   constructor(info: MobilityInfo, movingRight: boolean) {
     this.info = info;
     this.movingRight = movingRight;
+    this.run();
+  }
+
+  run() {
+    let interval = INTERVAL_MAX_MS * Math.random();
+    if (interval < INTERVAL_MIN_MS) {
+      interval = INTERVAL_MIN_MS;
+    }
+    setTimeout(() => {
+      this.updatePosition();
+      this.sendData();
+    }, interval);
+  }
+
+  sendData() {
+    const data = JSON.stringify(this.info);
+    client.publish(TOPIC + "/" + this.info.id, data, (err) => {
+      if (err) {
+        console.error(`Failed to publish message for ${TOPIC}`, err);
+      } else {
+        console.log(`Message published for ${TOPIC} : ${data}`);
+      }
+
+      this.run();
+    });
   }
 
   updatePosition() {
@@ -53,13 +79,13 @@ class Mobility {
       Math.random() * (MOVE_DISTANCE_MAX - MOVE_DISTANCE_MIN);
 
     if (this.movingRight) {
-      this.info.gps.lng += moveDistance;
-      if (this.info.gps.lng >= SEOUL_LNG_MAX) {
+      this.info.lng += moveDistance;
+      if (this.info.lng >= SEOUL_LNG_MAX) {
         this.movingRight = false;
       }
     } else {
-      this.info.gps.lng -= moveDistance;
-      if (this.info.gps.lng <= SEOUL_LNG_MIN) {
+      this.info.lng -= moveDistance;
+      if (this.info.lng <= SEOUL_LNG_MIN) {
         this.movingRight = true;
       }
     }
@@ -82,17 +108,17 @@ class MobilityManager {
     }
     this.isInited = true;
     this.createMobilities();
-    this.updatePositions();
-    setInterval(() => this.updatePositions(), INTERVAL_MS);
   }
 
   createMobilities() {
     for (let i = 0; i < this.totalCount; i++) {
+      const { lat, lng } = this.getRandomLocation();
       const mobility = new Mobility(
         {
           id: `id${i}`,
           name: `Mobility ${i}`,
-          gps: this.getRandomLocation(),
+          lat,
+          lng,
           createdAt: new Date(),
         },
         Math.random() >= 0.5
@@ -106,21 +132,6 @@ class MobilityManager {
     const lng = SEOUL_LNG_MIN + Math.random() * (SEOUL_LNG_MAX - SEOUL_LNG_MIN);
 
     return { lat, lng };
-  }
-
-  updatePositions() {
-    this.mobilities.forEach((mobility) => {
-      mobility.updatePosition();
-      const data = JSON.stringify(mobility.info);
-      const topic = TOPIC_PREFIX + "/" + mobility.info.id;
-      client.publish(topic, data, (err) => {
-        if (err) {
-          console.error(`Failed to publish message for ${topic}`, err);
-        } else {
-          console.log(`Message published for ${topic} : ${data}`);
-        }
-      });
-    });
   }
 }
 

@@ -15,7 +15,8 @@ SSL=1
 TOPIC=
 
 # interval ms
-INTERVAL=3000
+INTERVAL_MAX_MS=10000
+INTERVAL_MIN_MS=3000
 
 # client id max 23 characters
 CLIENT_ID=
@@ -27,7 +28,7 @@ USER_NAME=
 PASSWORD=
 
 # total mobility count
-TOTAL_CNT=100
+TOTAL_CNT=5
 ```
 
 To install dependencies:
@@ -42,4 +43,15 @@ To run:
 bun run index.ts
 ```
 
-This project was created using `bun init` in bun v1.1.22. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+To compile single file executable :
+
+```bash
+./build.sh
+```
+
+
+To run single file executable :
+
+```bash
+./iot-mobility-sample
+```
