@@ -1,20 +1,20 @@
 import mqtt, { type IClientOptions } from "mqtt";
 
 // contants
-const SEOUL_LAT_MIN = 37.55;
-const SEOUL_LAT_MAX = 37.7;
-const SEOUL_LNG_MIN = 126.8;
-const SEOUL_LNG_MAX = 127.1;
-const MOVE_DISTANCE_MIN = 0.0001;
-const MOVE_DISTANCE_MAX = 0.001;
-const TOPIC = process.env.TOPIC || "";
-const INTERVAL_MAX_MS = process.env.INTERVAL_MAX_MS
+export const SEOUL_LAT_MIN = 37.55;
+export const SEOUL_LAT_MAX = 37.7;
+export const SEOUL_LNG_MIN = 126.8;
+export const SEOUL_LNG_MAX = 127.1;
+export const MOVE_DISTANCE_MIN = 0.0001;
+export const MOVE_DISTANCE_MAX = 0.001;
+export const TOPIC = process.env.TOPIC || "";
+export const INTERVAL_MAX_MS = process.env.INTERVAL_MAX_MS
   ? parseInt(process.env.INTERVAL_MAX_MS, 10)
   : 3000;
-const INTERVAL_MIN_MS = process.env.INTERVAL_MIN_MS
+export const INTERVAL_MIN_MS = process.env.INTERVAL_MIN_MS
   ? parseInt(process.env.INTERVAL_MIN_MS, 10)
   : 1000;
-const OPTIONS: IClientOptions = {
+export const OPTIONS: IClientOptions = {
   protocolVersion: 3,
   host: process.env.HOST || "localhost",
   port: (process.env.PORT ? parseInt(process.env.PORT, 10) : false) || 8883,
@@ -24,14 +24,14 @@ const OPTIONS: IClientOptions = {
   username: process.env.USER_NAME,
   password: process.env.PASSWORD,
 };
-const COUNT: number = process.env.TOTAL_CNT
+export const COUNT: number = process.env.TOTAL_CNT
   ? parseInt(process.env.TOTAL_CNT, 10)
   : 2;
 
 // mqtt client setup
 const client = mqtt.connect(OPTIONS);
 
-interface MobilityInfo {
+export interface MobilityInfo {
   id: string;
   name: string;
   lat: number;
@@ -39,7 +39,7 @@ interface MobilityInfo {
   createdAt: Date;
 }
 
-class Mobility {
+export class Mobility {
   info: MobilityInfo;
   movingRight: boolean;
 
@@ -92,7 +92,7 @@ class Mobility {
   }
 }
 
-class MobilityManager {
+export class MobilityManager {
   totalCount: number;
   mobilities: Mobility[];
   isInited: boolean = false;
