@@ -24,6 +24,14 @@ export const OPTIONS: IClientOptions = {
   username: process.env.USER_NAME,
   password: process.env.PASSWORD,
 };
+
+if (
+  OPTIONS.host?.startsWith("mqtts://") ||
+  OPTIONS.host?.startsWith("mqtt://")
+) {
+  OPTIONS.host = OPTIONS.host.replace("mqtts://", "").replace("mqtt://", "");
+}
+
 export const COUNT: number = process.env.TOTAL_CNT
   ? parseInt(process.env.TOTAL_CNT, 10)
   : 2;
