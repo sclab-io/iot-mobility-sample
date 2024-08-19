@@ -69,12 +69,13 @@ export class Mobility {
   }
 
   sendData() {
+    const sendTopic = TOPIC + "/" + this.info.id;
     const data = JSON.stringify(this.info);
-    client.publish(TOPIC + "/" + this.info.id, data, (err) => {
+    client.publish(sendTopic, data, (err) => {
       if (err) {
-        console.error(`Failed to publish message for ${TOPIC}`, err);
+        console.error(`Failed to publish message for ${sendTopic}`, err);
       } else {
-        console.log(`Message published for ${TOPIC} : ${data}`);
+        console.log(`Message published for ${sendTopic} : ${data}`);
       }
 
       this.run();
