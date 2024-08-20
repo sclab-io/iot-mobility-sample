@@ -43,26 +43,12 @@ export function rng(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const cargoTypes = ["후판", "극후판", "중판", "박판"];
-const cargoHeight = ["2M", "2.5M", "3M", "3.5M", "4M"];
-const cargoWidth = ["2M", "2.5M", "3M", "3.5M", "4M"];
-
 export interface MobilityInfo {
   id: string;
-  name: string;
-  carNumber: string;
-  phone: string;
-  carType: string;
-  cargoType: string;
-  cargoWeight: string;
-  cargoHeight: string;
-  cargoCBM: string;
-  cargoWidth: string;
-  cargoLength: string;
-  speed: number;
   lat: number;
   lng: number;
   createdAt: Date;
+  speed: number;
 }
 
 export class Mobility {
@@ -118,6 +104,7 @@ export class Mobility {
     }
 
     this.info.speed = rng(0, 150);
+    this.info.createdAt = new Date();
   }
 }
 
@@ -145,19 +132,9 @@ export class MobilityManager {
       const mobility = new Mobility(
         {
           id: `id${i}`,
-          name: `Mobility ${i}`,
-          carNumber: `${rng(10, 99)}가 ${rng(1000, 9999)}`,
-          phone: `010-${rng(1000, 9999)}-${rng(1000, 9999)}`,
-          carType: `${rng(10, 30)}t 화물`,
-          cargoType: `${cargoTypes[rng(0, cargoTypes.length - 1)]}`,
-          cargoWeight: `${rng(10, 30)}t`,
-          cargoHeight: `${cargoHeight[rng(0, cargoHeight.length - 1)]}`,
-          cargoCBM: `${rng(33, 55)}`,
-          cargoWidth: `${cargoWidth[rng(0, cargoWidth.length - 1)]}`,
-          cargoLength: `${rng(10, 20)}M`,
-          speed: 0,
           lat,
           lng,
+          speed: 0,
           createdAt: new Date(),
         },
         Math.random() >= 0.5
