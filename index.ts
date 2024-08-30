@@ -73,7 +73,7 @@ export class Mobility {
   }
 
   sendData() {
-    const sendTopic = TOPIC + "/" + this.info.id;
+    const sendTopic = TOPIC;
     const data = JSON.stringify(this.info);
     client.publish(sendTopic, data, (err) => {
       if (err) {
