@@ -1,4 +1,9 @@
 import mqtt, { type IClientOptions } from "mqtt";
+import path1 from "./assets/path1.json";
+import path2 from "./assets/path2.json";
+import path3 from "./assets/path3.json";
+import path4 from "./assets/path4.json";
+import path5 from "./assets/path5.json";
 
 // contants
 export const SEOUL_LAT_MIN = 37.55;
@@ -39,9 +44,16 @@ export const COUNT: number = process.env.TOTAL_CNT
 // mqtt client setup
 const client = mqtt.connect(OPTIONS);
 
+export enum PathType {
+  RANDOM = "random",
+  JSON = "json",
+}
+
 export function rng(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+const pathFiles = [path1, path2, path3, path4, path5];
 
 export interface MobilityInfo {
   id: string;
@@ -54,10 +66,21 @@ export interface MobilityInfo {
 export class Mobility {
   info: MobilityInfo;
   movingRight: boolean;
+  pathType: PathType;
+  pathFileNumber: number;
+  currentIndex: number;
 
-  constructor(info: MobilityInfo, movingRight: boolean) {
+  constructor(
+    info: MobilityInfo,
+    movingRight: boolean,
+    pathType: PathType = PathType.RANDOM,
+    pathFileNumber: number = 0
+  ) {
     this.info = info;
     this.movingRight = movingRight;
+    this.pathType = pathType;
+    this.pathFileNumber = pathFileNumber;
+    this.currentIndex = rng(0, pathFiles[pathFileNumber].length - 1);
     this.run();
   }
 
@@ -79,7 +102,9 @@ export class Mobility {
       if (err) {
         console.error(`Failed to publish message for ${sendTopic}`, err);
       } else {
-        console.log(`Message published for ${sendTopic} : ${data}`);
+        console.log(
+          `Message published for ${sendTopic}, ${this.currentIndex} : ${data}`
+        );
       }
 
       this.run();
@@ -87,6 +112,37 @@ export class Mobility {
   }
 
   updatePosition() {
+    switch (this.pathType) {
+      case PathType.RANDOM:
+        this.updatePositionRandom();
+        break;
+      case PathType.JSON:
+        this.updatePositionJson();
+        break;
+    }
+
+    this.info.speed = rng(0, 150);
+    this.info.createdAt = new Date();
+  }
+
+  /**
+   * follow path and bounce back when reach the end
+   */
+  updatePositionJson() {
+    const path = pathFiles[this.pathFileNumber];
+    if (this.currentIndex === path.length - 1) {
+      this.movingRight = false;
+    } else if (this.currentIndex === 0) {
+      this.movingRight = true;
+    }
+
+    this.currentIndex += this.movingRight ? 1 : -1;
+    const current = path[this.currentIndex];
+    this.info.lat = current[1];
+    this.info.lng = current[0];
+  }
+
+  updatePositionRandom() {
     const moveDistance =
       MOVE_DISTANCE_MIN +
       Math.random() * (MOVE_DISTANCE_MAX - MOVE_DISTANCE_MIN);
@@ -102,9 +158,6 @@ export class Mobility {
         this.movingRight = true;
       }
     }
-
-    this.info.speed = rng(0, 150);
-    this.info.createdAt = new Date();
   }
 }
 
@@ -137,7 +190,9 @@ export class MobilityManager {
           speed: 0,
           createdAt: new Date(),
         },
-        Math.random() >= 0.5
+        Math.random() >= 0.5,
+        PathType.JSON,
+        i % pathFiles.length
       );
       this.mobilities.push(mobility);
     }
